@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.SceneManagement;
 
 public class Player : MonoBehaviour {	
 
@@ -7,13 +8,13 @@ public class Player : MonoBehaviour {
 	public float maximumSpeed = 1.0f;
 
 	//jumping vars
-	bool isGrounded = false;
+	bool isGrounded = false;	
 	public float groundCheckRadius = 0.2f;
-	public LayerMask groundLayer;
+	public LayerMask groundLayer;	
 	public Transform groundCheck;
 	public float jumpHeight;
-
-
+	public float threshold;	
+	public float goalPosition;
 
 	Rigidbody2D	rigidBody;
 	Animator animator;
@@ -22,11 +23,19 @@ public class Player : MonoBehaviour {
 	void Start(){
 		rigidBody = GetComponent<Rigidbody2D>();
 		animator = GetComponent<Animator>();
-		facingRight = true;
+		facingRight = true;		
 	}
 
 
 	void FixedUpdate(){
+		if( transform.position.y < threshold ){
+			respawn();
+		}
+
+		if( transform.position.x >= goalPosition ){
+			SceneManager.LoadScene(2);
+		}
+
 		isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
 
 		animator.SetBool("isGrounded", isGrounded);
@@ -44,14 +53,17 @@ public class Player : MonoBehaviour {
 
 	}
 
-	void Update(){
+	void Update(){	
 		if( isGrounded && Input.GetAxis("Jump") > 0 ){
 			isGrounded = false;
 			animator.SetBool("isGrounded", isGrounded);
 			rigidBody.AddForce(new Vector2(0, jumpHeight));
-		}
+		}		
 	}
 
+	void respawn(){		
+		transform.position = new Vector3(-15, 3, 0);
+	}
 
 	void flip(){
 		facingRight = !facingRight;
